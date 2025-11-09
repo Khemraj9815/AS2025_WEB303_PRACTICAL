@@ -1,0 +1,16 @@
+FROM golang:1.25-alpine AS builder
+WORKDIR /app
+
+# Download dependencies
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy source and build
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -o /api-gateway .
+
+FROM alpine:latest
+WORKDIR /
+COPY --from=builder /api-gateway /api-gateway
+EXPOSE 8080
+CMD ["/api-gateway"]
